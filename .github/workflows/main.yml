@@ -1,0 +1,38 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set Up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.0
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+
+      - name: Run Tests
+        run: vendor/bin/phpunit
+
+      - name: Build Assets
+        run: npm install && npm run production
+
+      - name: Deploy to Staging
+        uses: my-custom-deployment-action@v1
+        with:
+          environment: staging
+
+      - name: Deploy to Production
+        uses: my-custom-deployment-action@v1
+        with:
+          environment: production
