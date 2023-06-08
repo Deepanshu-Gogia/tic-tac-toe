@@ -6,15 +6,48 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install Dependencies
-        run: composer install
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set Up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.0
+
+      - name: Install Composer Dependencies
+        run: composer install --prefer-dist --no-ansi --no-interaction --no-progress
 
       - name: Generate Application Key
         run: php artisan key:generate --ansi
 
-      - name: Run Migrations
-        run: php artisan migrate
+      - name: Run Unit Tests
+        run: vendor/bin/phpunit
+
+  build-and-deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Install NPM Dependencies
+        run: npm install
+
+      - name: Build Assets
+        run: npm run production
+
+      - name: Deploy to Staging
+        # Add your deployment steps for the staging environment
+
+      - name: Deploy to Production
+        # Add your deployment steps for the production environment
